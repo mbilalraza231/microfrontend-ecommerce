@@ -1,0 +1,12 @@
+/* Global styles for the checkout MFE.
+   Shared design tokens come from @mfe-shop/ui so this Angular app looks
+   consistent with the React/Vue apps — tokens, not components, are the
+   cross-framework sharing mechanism. */
+@import "@mfe-shop/ui/tokens.css";
+
+body {
+  margin: 0;
+  background: var(--mfe-color-bg);
+  color: var(--mfe-color-ink);
+  font-family: var(--mfe-font-stack);
+}

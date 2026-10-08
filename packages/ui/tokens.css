@@ -1,0 +1,30 @@
+/*
+ * Design tokens — the single source of truth for colors/spacing/typography.
+ * React apps get these via @mfe-shop/ui/styles.css imported inside components.
+ * Vue (account) and Angular (checkout) apps import ONLY this tokens.css and
+ * use the variables in their own scoped styles. Same look, no component
+ * sharing across frameworks needed.
+ */
+:root {
+  --mfe-color-bg: #f6f5f2;
+  --mfe-color-surface: #ffffff;
+  --mfe-color-ink: #100e0c;
+  --mfe-color-muted: #6f6a63;
+  --mfe-color-primary: #d9480f;
+  --mfe-color-primary-dark: #b83a0a;
+  --mfe-color-border: #e3e0da;
+  --mfe-color-success: #2b8a3e;
+
+  --mfe-radius-sm: 6px;
+  --mfe-radius-md: 10px;
+  --mfe-radius-lg: 16px;
+
+  --mfe-space-1: 4px;
+  --mfe-space-2: 8px;
+  --mfe-space-3: 12px;
+  --mfe-space-4: 16px;
+  --mfe-space-6: 24px;
+  --mfe-space-8: 32px;
+
+  --mfe-font-stack: "Segoe UI", system-ui, -apple-system, sans-serif;
+}

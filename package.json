@@ -1,0 +1,21 @@
+{
+  "name": "microfrontend-ecommerce",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "backend"
+  ],
+  "devDependencies": {
+    "webpack": "5.94.0"
+  },
+  "scripts": {
+    "backend": "node backend/src/server.js",
+    "dev:shell": "npm run dev --workspace @mfe-shop/shell",
+    "dev:shop": "npm run dev --workspace @mfe-shop/shop",
+    "dev:search": "npm run dev --workspace @mfe-shop/search",
+    "dev:account": "npm run dev --workspace @mfe-shop/account",
+    "dev:checkout": "npm run dev --workspace @mfe-shop/checkout"
+  }
+}

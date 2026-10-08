@@ -1,0 +1,13 @@
+{
+  "name": "@mfe-shop/ui",
+  "version": "0.1.0",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./tokens.css": "./tokens.css",
+    "./styles.css": "./styles.css"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
+}

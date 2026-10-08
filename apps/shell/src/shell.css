@@ -1,0 +1,80 @@
+body {
+  margin: 0;
+  background: var(--mfe-color-bg);
+  color: var(--mfe-color-ink);
+  font-family: var(--mfe-font-stack);
+}
+
+.shell-header {
+  display: flex;
+  align-items: center;
+  gap: var(--mfe-space-6);
+  padding: var(--mfe-space-3) var(--mfe-space-6);
+  background: var(--mfe-color-surface);
+  border-bottom: 1px solid var(--mfe-color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.shell-logo {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+}
+.shell-logo span { color: var(--mfe-color-primary); }
+
+.shell-nav { display: flex; gap: var(--mfe-space-4); flex: 1; }
+.shell-nav a {
+  color: var(--mfe-color-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: var(--mfe-space-1) var(--mfe-space-2);
+  border-radius: var(--mfe-radius-sm);
+}
+.shell-nav a.active { color: var(--mfe-color-ink); background: var(--mfe-color-bg); }
+.shell-nav a:hover { color: var(--mfe-color-ink); }
+
+.shell-cart { display: flex; align-items: center; gap: var(--mfe-space-2); font-size: 14px; }
+
+.shell-main { max-width: 1100px; margin: 0 auto; padding: var(--mfe-space-6); }
+
+.shell-footer {
+  text-align: center;
+  color: var(--mfe-color-muted);
+  font-size: 12px;
+  padding: var(--mfe-space-6);
+}
+
+.home-hero {
+  background: var(--mfe-color-surface);
+  border: 1px solid var(--mfe-color-border);
+  border-radius: var(--mfe-radius-lg);
+  padding: var(--mfe-space-8);
+  margin-bottom: var(--mfe-space-6);
+}
+.home-hero h1 { margin: 0 0 var(--mfe-space-2); font-size: 32px; }
+.home-hero p { margin: 0; color: var(--mfe-color-muted); }
+
+.home-cats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--mfe-space-4); }
+.home-cat {
+  background: var(--mfe-color-surface);
+  border: 1px solid var(--mfe-color-border);
+  border-radius: var(--mfe-radius-md);
+  padding: var(--mfe-space-4);
+  text-decoration: none;
+  color: var(--mfe-color-ink);
+}
+.home-cat:hover { border-color: var(--mfe-color-primary); }
+.home-cat h3 { margin: 0 0 var(--mfe-space-1); font-size: 15px; }
+.home-cat p { margin: 0; font-size: 12px; color: var(--mfe-color-muted); }
+
+.remote-loading { padding: var(--mfe-space-8); text-align: center; color: var(--mfe-color-muted); }
+.remote-error {
+  padding: var(--mfe-space-4);
+  border: 1px dashed var(--mfe-color-primary);
+  border-radius: var(--mfe-radius-md);
+  color: var(--mfe-color-primary-dark);
+  font-size: 14px;
+}
