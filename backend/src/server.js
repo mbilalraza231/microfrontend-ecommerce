@@ -15,7 +15,29 @@ const cors = require("cors");
 
 const app = express();
 app.use(cors()); // dev: all MFE ports (3000-3003, 4200) may call us
-app.use(express.json());
+app.use(express.json({ limit: "10kb" })); // reject oversized request bodies
+
+// ---- INPUT VALIDATION: the server never trusts the browser ----
+// Rules: quantities are whole numbers within limits, product ids must exist,
+// search input is bounded, categories are whitelisted, totals are computed
+// HERE only. A negative quantity (-5) once produced a -245 order total.
+const MAX_QTY_PER_LINE = 99;
+const MAX_QTY_TOTAL = 999;
+const MAX_SEARCH_LEN = 100;
+
+// strict positive integer; rejects "2.5", "-5", "abc", true, [], null...
+function toPositiveInt(v) {
+  if (typeof v === "boolean" || v === null || Array.isArray(v) || v === "") return null;
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 1 ? n : null;
+}
+
+// productId (number or numeric string) -> product object, or null.
+function findProduct(v) {
+  if (typeof v !== "number" && typeof v !== "string") return null;
+  const n = toPositiveInt(v);
+  return n === null ? null : PRODUCTS.find((p) => p.id === n) || null;
+}
 
 const PRODUCTS = [
   { id: 1, name: "Aurora Desk Lamp", price: 49, category: "home", image: "https://picsum.photos/seed/lamp/400/300", description: "Warm-glow LED lamp with touch dimming." },
@@ -32,20 +54,34 @@ const PRODUCTS = [
   { id: 12, name: "Echo Studio Monitors (pair)", price: 199, category: "audio", image: "https://picsum.photos/seed/monitors/400/300", description: "5\" active near-field monitors." },
 ];
 
+// derived AFTER PRODUCTS exists (const doesn't hoist)
+const CATEGORIES = [...new Set(PRODUCTS.map((p) => p.category))];
+
 let cart = []; // [{productId, quantity}]
 const orders = []; // [{id, items, total, placedAt}]
 
 app.get("/api/products", (req, res) => res.json(PRODUCTS));
 
 app.get("/api/products/:id", (req, res) => {
-  const p = PRODUCTS.find((x) => x.id === Number(req.params.id));
+  const p = findProduct(req.params.id);
   if (!p) return res.status(404).json({ error: "product not found" });
   res.json(p);
 });
 
 app.get("/api/search", (req, res) => {
+  // only plain strings accepted (?q=a&q=b arrays, objects -> 400)
+  if (req.query.q !== undefined && typeof req.query.q !== "string")
+    return res.status(400).json({ error: "q must be a string" });
+  if (req.query.category !== undefined && typeof req.query.category !== "string")
+    return res.status(400).json({ error: "category must be a string" });
+
   const q = String(req.query.q || "").trim().toLowerCase();
   const category = String(req.query.category || "").toLowerCase();
+  if (q.length > MAX_SEARCH_LEN)
+    return res.status(400).json({ error: `q too long (max ${MAX_SEARCH_LEN})` });
+  if (category && !CATEGORIES.includes(category))
+    return res.status(400).json({ error: "unknown category" });
+
   let results = PRODUCTS;
   if (q) {
     results = results.filter(
@@ -67,16 +103,28 @@ app.get("/api/cart", (req, res) => {
 });
 
 app.post("/api/cart", (req, res) => {
-  const { productId, quantity = 1 } = req.body || {};
-  const p = PRODUCTS.find((x) => x.id === Number(productId));
+  const { productId, quantity } = req.body || {};
+  const p = findProduct(productId); // must exist in catalog
   if (!p) return res.status(400).json({ error: "invalid productId" });
+
+  const qty = quantity === undefined ? 1 : toPositiveInt(quantity);
+  if (qty === null)
+    return res.status(400).json({ error: "quantity must be a whole number >= 1" });
+
   const existing = cart.find((c) => c.productId === p.id);
-  if (existing) existing.quantity += Number(quantity);
-  else cart.push({ productId: p.id, quantity: Number(quantity) });
+  if ((existing ? existing.quantity : 0) + qty > MAX_QTY_PER_LINE)
+    return res.status(400).json({ error: `max ${MAX_QTY_PER_LINE} per item` });
+  if (cart.reduce((s, c) => s + c.quantity, 0) + qty > MAX_QTY_TOTAL)
+    return res.status(400).json({ error: `cart total quantity max ${MAX_QTY_TOTAL}` });
+
+  if (existing) existing.quantity += qty;
+  else cart.push({ productId: p.id, quantity: qty });
   res.status(201).json(cart);
 });
 
 app.delete("/api/cart/:productId", (req, res) => {
+  if (toPositiveInt(req.params.productId) === null)
+    return res.status(400).json({ error: "invalid productId" });
   cart = cart.filter((c) => c.productId !== Number(req.params.productId));
   res.json(cart);
 });
@@ -85,8 +133,16 @@ app.get("/api/orders", (req, res) => res.json(orders));
 
 app.post("/api/orders", (req, res) => {
   if (!cart.length) return res.status(400).json({ error: "cart is empty" });
+
+  // belt & braces: re-check the invariant at checkout too — refuse to order
+  // a cart that contains anything invalid, however it got there.
+  for (const c of cart) {
+    if (!findProduct(c.productId) || toPositiveInt(c.quantity) === null)
+      return res.status(500).json({ error: "corrupt cart entry" });
+  }
+
   const items = cart.map((c) => {
-    const p = PRODUCTS.find((x) => x.id === c.productId);
+    const p = findProduct(c.productId);
     return { productId: p.id, name: p.name, price: p.price, quantity: c.quantity };
   });
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
